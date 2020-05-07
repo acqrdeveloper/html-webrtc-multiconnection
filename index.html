@@ -8,11 +8,13 @@
 
   <script src="https://rtcmulticonnection.herokuapp.com/dist/RTCMultiConnection.min.js"></script>
   <script src="https://rtcmulticonnection.herokuapp.com/socket.io/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.min.js"></script>
 
   <style>
     html,
     body {
       padding: 10px;
+      font-family: Arial, Helvetica, sans-serif;
     }
 
     button {
@@ -80,9 +82,15 @@
       </div>
 
       <!-- Imagen -->
-      <div id="canvas_streaming" style="height: 50px;width:50px;">
+      <div id="img_streaming">
+        <!-- Imagen Streaming -->
+        <div>Ultima imagen para la API </div>
+        <img id="img_api" />
+      </div>
+      <br>
+      <div id="canvas_streaming">
+        <div>Capturas de imagenes</div>
         <!-- Canvas Streaming -->
-        <!-- <canvas id="canvas" style="overflow:auto"></canvas> -->
       </div>
     </div>
 
@@ -150,72 +158,41 @@
       canvas.id = divid;
       canvas.width = 200;
       canvas.height = 100;
+      canvas.style.margin = "1px";
       canvas.style.zIndex = 8;
-      canvas.style.position = "relative";
       canvas.style.border = "1px solid #000";
 
       canvas.getContext('2d').drawImage(video, 0, 0, 200, 100)
+      
+      var url = canvas.toDataURL();
+      console.log(url)
 
+      //Set image
+      var newImg = document.getElementById("img_api"); // create img tag
+      newImg.src = url;
+
+      //Añadir canvas a body
       canvas_streaming.appendChild(canvas);
-
-      /*
-      cursorLayer = document.getElementById(divid);
-  
-      console.log(cursorLayer);
-  
-      // below is optional
-  
-      var ctx = canvas.getContext("2d");
-      ctx.fillStyle = "rgba(255, 0, 0, 0.2)";
-      ctx.fillRect(100, 100, 200, 200);
-      ctx.fillStyle = "rgba(0, 255, 0, 0.2)";
-      ctx.fillRect(150, 150, 200, 200);
-      ctx.fillStyle = "rgba(0, 0, 255, 0.2)";
-      ctx.fillRect(200, 50, 200, 200);
-      
-  
-  
-  
-      
-        // var canvas = document.getElementById('canvas');
-        // var video = document.getElementById(window.mediafile_id);
-        // console.log(video)
-        // canvas.width = video.videoWidth;
-        // canvas.height = video.videoHeight;
-        // // canvas.getContext('2d').drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-        // canvas.getContext('2d').drawImage(video, 0, 0, 500, 350);
-        // // canvas.toBlob() = (blob) => {
-          // const img = new Image();
-          // img.src = window.URL.createObjectUrl(blob);
-        // // };
-      }
-  
-    function capture_snapshot_dos() {
-        var canvas = document.getElementById('canvas');
-        var video = document.getElementById(window.mediafile_id);
-        console.log(video)
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-  
-        /** Code to merge image **/
-      /** For instance, if I want to merge a play image on center of existing image **/
-      const playImage = new Image();
-      playImage.src = 'path to image asset';
-      playImage.onload = () => {
-        const startX = (video.videoWidth / 2) - (playImage.width / 2);
-        const startY = (video.videoHeight / 2) - (playImage.height / 2);
-        canvas.getContext('2d').drawImage(playImage, startX, startY, playImage.width, playImage.height);
-        canvas.toBlob() = (blob) => {
-          const img = new Image();
-          img.src = window.URL.createObjectUrl(blob);
-        };
-      };
-      /** End **/
     }
 
     function sendAPI() {
+      var API_URL = "https://api.imgur.com/3/image"
+      var formData = new FormData()
+      var image_mediafile = document.getElementById("img_api")
+      // console.log(image_mediafile.src)
+      formData.append('image', image_mediafile.src)
+      // console.log(formData)
 
+
+      axios.post(API_URL, formData, { headers: { 'Content-Type': 'multipart/form-data' } }).then(function(r){
+        if (r.status === 201) {
+          alert("Imagen subido correctamente")
+        }
+      }).catch(function(e){
+        alert("Error al subir imagen")
+      }).finally(function(){
+        cosole.log(formData)
+      })
     }
 
   </script>

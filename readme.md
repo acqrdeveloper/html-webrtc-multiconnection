@@ -17,3 +17,6 @@ https://developer.mozilla.org/en-US/docs/Web/API/Screen_Capture_API/Using_Screen
 https://webrtc.github.io/samples/
 
 https://www.w3.org/TR/screen-capture/#example
+
+## Imagen de prueba
+![Alt text](test.png?raw=true "Title")
