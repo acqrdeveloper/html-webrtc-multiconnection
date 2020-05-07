@@ -1,103 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
- <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Document</title>
 
-<script src="https://rtcmulticonnection.herokuapp.com/dist/RTCMultiConnection.min.js"></script>
-<script src="https://rtcmulticonnection.herokuapp.com/socket.io/socket.io.js"></script>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+
+  <script src="https://rtcmulticonnection.herokuapp.com/dist/RTCMultiConnection.min.js"></script>
+  <script src="https://rtcmulticonnection.herokuapp.com/socket.io/socket.io.js"></script>
+
+  <style>
+    html,
+    body {
+      padding: 10px;
+    }
+
+    button {
+      display: inline-block;
+      font-weight: 400;
+      color: #23282c;
+      text-align: center;
+      vertical-align: middle;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      background-color: transparent;
+      border: 1px solid transparent;
+      padding: .375rem .75rem;
+      font-size: .875rem;
+      line-height: 1.5;
+      border-radius: .25rem;
+      transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    }
+
+    [type=submit]:not(:disabled),
+    button:not(:disabled) {
+      cursor: pointer;
+    }
+
+    .w-50 {
+      width: 50%;
+    }
+
+    .w-100 {
+      width: 50%;
+      display: flex;
+    }
+
+    #video_streaming {
+      max-width: 200px;
+      min-width: 200px;
+    }
+  </style>
 
 </head>
+
 <body>
   <!-- <img id="myimage" src="" alt=""> -->
 
   <!-- <video id="myvideo" src="http://www.w3schools.com/html/mov_bbb.mp4" type="video/webm" controls></video> -->
-  
-  <button onclick="capture_snapshot()">Capturar pantalla</button>
-  <button onclick="shared_chrome()">Habilitar compartir pantallas chrome</button>
 
-  <br>
-  <br>
-  <!-- <video id="myvideo" type="video/webm" controls></video> -->
+  <div class="w-100">
 
-  <div id="video_streaming" hidden>
-    <!-- video atream -->
+    <div class="w-50">
+      <div>
+        <button onclick="shared_chrome()">1.- Habilitar compartir pantallas chrome</button>
+      </div>
+      <div>
+        <button onclick="capture_snapshot()">2.- Capturar pantalla</button>
+      </div>
+      <div>
+        <button onclick="sendAPI()">3.- Enviar por API</button>
+      </div>
+    </div>
+    <div class="w-50">
+      <div id="video_streaming" hidden>
+        <!-- Video Streaming -->
+      </div>
+
+      <!-- Imagen -->
+      <div id="canvas_streaming" style="height: 50px;width:50px;">
+        <!-- Canvas Streaming -->
+        <!-- <canvas id="canvas" style="overflow:auto"></canvas> -->
+      </div>
+    </div>
+
   </div>
 
-  <div style="height: 50px;width:50px;">
-    <canvas id="canvas" style="overflow:auto"></canvas>
-  </div>
+  <script>
+    // 1. Create the connection Objekt
+    var connection = new RTCMultiConnection();
 
-<script>
-  // 1. Create the connection Objekt
-  var connection = new RTCMultiConnection();
-  // 2. Activate screen, which is the whole monitor, not only the browser window!
-  // this line is VERY_important
-  connection.socketURL = 'https://rtcmulticonnection.herokuapp.com:443/';
+    // 2. Activate screen, which is the whole monitor, not only the browser window!
+    // this line is VERY_important
+    connection.socketURL = 'https://rtcmulticonnection.herokuapp.com:443/';
 
-  function start(params) {
-    // if you want audio+video conferencing
-    connection.session = {
-      screen: true,
-      oneway: false,
-      video: false,
-      audio: false,
-    };
+    function start(params) {
+      // if you want audio+video conferencing
+      connection.session = {
+        screen: true,
+        oneway: false,
+        video: false,
+        audio: false,
+      };
 
-    connection.sdpConstraints.mandatory = {
-      OfferToReceiveAudio: true,
-      OfferToReceiveVideo: true
-    };
+      connection.sdpConstraints.mandatory = {
+        OfferToReceiveAudio: true,
+        OfferToReceiveVideo: true
+      };
 
-    //  connection.dontCaptureUserMedia = false;
+      //  connection.dontCaptureUserMedia = false;
 
-    connection.onstream = function (event) {
-      console.log(event)
+      connection.onstream = function (event) {
+        console.log(event)
 
-      var video_streaming = document.getElementById("video_streaming");
-      video_streaming.appendChild(event.mediaElement)
+        var video_streaming = document.getElementById("video_streaming");
+        video_streaming.appendChild(event.mediaElement)
 
-      //Video in body
-      //document.body.appendChild(event.mediaElement)
+        //Video in body
+        //document.body.appendChild(event.mediaElement)
 
-      window.socket_id = event.userid
-      window.mediafile_id = event.streamid
-    };
+        window.socket_id = event.userid
+        window.mediafile_id = event.streamid
+      };
 
-     connection.dontCaptureUserMedia = false;
-  
-  }
+      connection.dontCaptureUserMedia = false;
 
-  start()
-
-  function shared_chrome() {
-      connection.openOrJoin('your-room-id');
-  }
-
-  function capture_snapshot() {
-      var canvas = document.getElementById('canvas');
-      var video = document.getElementById(window.mediafile_id);
-      console.log(video)
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      // canvas.getContext('2d').drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-      canvas.getContext('2d').drawImage(video, 0, 0, 500, 350);
-      // canvas.toBlob() = (blob) => {
-      //   const img = new Image();
-      //   img.src = window.URL.createObjectUrl(blob);
-      // };
     }
 
-  function capture_snapshot_dos() {
-      var canvas = document.getElementById('canvas');
-      var video = document.getElementById(window.mediafile_id);
-      console.log(video)
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      canvas.getContext('2d').drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+    start()
 
-      /** Code to merge image **/
+    function shared_chrome() {
+      connection.openOrJoin('your-room-id');
+    }
+
+    function capture_snapshot() {
+
+      //div canvas
+      var canvas_streaming = document.getElementById("canvas_streaming");
+      //video stream
+      var video = document.getElementById(window.mediafile_id);
+
+      //Crear canvas
+      var canvas = document.createElement('canvas');
+
+      var timer = (new Date()).getTime()
+      var divid = "CursorLayer-" + timer
+      canvas.id = divid;
+      canvas.width = 200;
+      canvas.height = 100;
+      canvas.style.zIndex = 8;
+      canvas.style.position = "relative";
+      canvas.style.border = "1px solid #000";
+
+      canvas.getContext('2d').drawImage(video, 0, 0, 200, 100)
+
+      canvas_streaming.appendChild(canvas);
+
+      /*
+      cursorLayer = document.getElementById(divid);
+  
+      console.log(cursorLayer);
+  
+      // below is optional
+  
+      var ctx = canvas.getContext("2d");
+      ctx.fillStyle = "rgba(255, 0, 0, 0.2)";
+      ctx.fillRect(100, 100, 200, 200);
+      ctx.fillStyle = "rgba(0, 255, 0, 0.2)";
+      ctx.fillRect(150, 150, 200, 200);
+      ctx.fillStyle = "rgba(0, 0, 255, 0.2)";
+      ctx.fillRect(200, 50, 200, 200);
+      
+  
+  
+  
+      
+        // var canvas = document.getElementById('canvas');
+        // var video = document.getElementById(window.mediafile_id);
+        // console.log(video)
+        // canvas.width = video.videoWidth;
+        // canvas.height = video.videoHeight;
+        // // canvas.getContext('2d').drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+        // canvas.getContext('2d').drawImage(video, 0, 0, 500, 350);
+        // // canvas.toBlob() = (blob) => {
+          // const img = new Image();
+          // img.src = window.URL.createObjectUrl(blob);
+        // // };
+      }
+  
+    function capture_snapshot_dos() {
+        var canvas = document.getElementById('canvas');
+        var video = document.getElementById(window.mediafile_id);
+        console.log(video)
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+  
+        /** Code to merge image **/
       /** For instance, if I want to merge a play image on center of existing image **/
       const playImage = new Image();
       playImage.src = 'path to image asset';
@@ -113,7 +214,12 @@
       /** End **/
     }
 
-</script>
+    function sendAPI() {
+
+    }
+
+  </script>
 
 </body>
+
 </html>
