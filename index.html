@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Document</title>
+
+<script src="https://rtcmulticonnection.herokuapp.com/dist/RTCMultiConnection.min.js"></script>
+<script src="https://rtcmulticonnection.herokuapp.com/socket.io/socket.io.js"></script>
+
+</head>
+<body>
+  <!-- <img id="myimage" src="" alt=""> -->
+
+  <!-- <video id="myvideo" src="http://www.w3schools.com/html/mov_bbb.mp4" type="video/webm" controls></video> -->
+  
+  <button onclick="capture_snapshot()">Capturar pantalla</button>
+  <button onclick="shared_chrome()">Habilitar compartir pantallas chrome</button>
+
+  <br>
+  <br>
+  <!-- <video id="myvideo" type="video/webm" controls></video> -->
+
+  <div id="video_streaming" hidden>
+    <!-- video atream -->
+  </div>
+
+  <div style="height: 50px;width:50px;">
+    <canvas id="canvas" style="overflow:auto"></canvas>
+  </div>
+
+<script>
+  // 1. Create the connection Objekt
+  var connection = new RTCMultiConnection();
+  // 2. Activate screen, which is the whole monitor, not only the browser window!
+  // this line is VERY_important
+  connection.socketURL = 'https://rtcmulticonnection.herokuapp.com:443/';
+
+  function start(params) {
+    // if you want audio+video conferencing
+    connection.session = {
+      screen: true,
+      oneway: false,
+      video: false,
+      audio: false,
+    };
+
+    connection.sdpConstraints.mandatory = {
+      OfferToReceiveAudio: true,
+      OfferToReceiveVideo: true
+    };
+
+    //  connection.dontCaptureUserMedia = false;
+
+    connection.onstream = function (event) {
+      console.log(event)
+
+      var video_streaming = document.getElementById("video_streaming");
+      video_streaming.appendChild(event.mediaElement)
+
+      //Video in body
+      //document.body.appendChild(event.mediaElement)
+
+      window.socket_id = event.userid
+      window.mediafile_id = event.streamid
+    };
+
+     connection.dontCaptureUserMedia = false;
+  
+  }
+
+  start()
+
+  function shared_chrome() {
+      connection.openOrJoin('your-room-id');
+  }
+
+  function capture_snapshot() {
+      var canvas = document.getElementById('canvas');
+      var video = document.getElementById(window.mediafile_id);
+      console.log(video)
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      // canvas.getContext('2d').drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+      canvas.getContext('2d').drawImage(video, 0, 0, 500, 350);
+      // canvas.toBlob() = (blob) => {
+      //   const img = new Image();
+      //   img.src = window.URL.createObjectUrl(blob);
+      // };
+    }
+
+  function capture_snapshot_dos() {
+      var canvas = document.getElementById('canvas');
+      var video = document.getElementById(window.mediafile_id);
+      console.log(video)
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+
+      /** Code to merge image **/
+      /** For instance, if I want to merge a play image on center of existing image **/
+      const playImage = new Image();
+      playImage.src = 'path to image asset';
+      playImage.onload = () => {
+        const startX = (video.videoWidth / 2) - (playImage.width / 2);
+        const startY = (video.videoHeight / 2) - (playImage.height / 2);
+        canvas.getContext('2d').drawImage(playImage, startX, startY, playImage.width, playImage.height);
+        canvas.toBlob() = (blob) => {
+          const img = new Image();
+          img.src = window.URL.createObjectUrl(blob);
+        };
+      };
+      /** End **/
+    }
+
+</script>
+
+</body>
+</html>
